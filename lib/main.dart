@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:rive/rive.dart';
 
 void main() {
   runApp(MyApp());
@@ -26,12 +28,25 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateMixin {
+  Artboard _truckArtboard;
+  RiveAnimationController _controller;
+  bool get isPlaying => _controller?.isActive ?? false;
 
-  void _incrementCounter() {
+  @override
+  void initState() {
+    super.initState();
+    rootBundle.load('assets/animations/loadingstock.riv').then((data) async {
+      final file = RiveFile.import(data);
+      final artboard = file.mainArtboard;
+      artboard.addController(_controller = SimpleAnimation('idle'));
+        setState(() => _truckArtboard = artboard);
+    });
+  }
+  
+  void _togglePlay() {
     setState(() {
-      _counter++;
+      _controller.isActive = !_controller.isActive;
     });
   }
 
@@ -42,24 +57,11 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
-        ),
+        child: _truckArtboard == null ? CircularProgressIndicator() : Rive(artboard: _truckArtboard)
+      ),floatingActionButton: FloatingActionButton(
+        onPressed: () => _togglePlay(),
+        child: Icon(isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), 
     );
   }
 }
