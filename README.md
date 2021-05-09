@@ -2,4 +2,4 @@
 
 A project to understand animations with Rive
 
-![video_demo](demo.mp4)
+![video_demo](demo.gif)
