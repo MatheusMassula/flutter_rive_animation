@@ -30,8 +30,10 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateMixin {
   Artboard _truckArtboard;
-  RiveAnimationController _controller;
-  bool get isPlaying => _controller?.isActive ?? false;
+  RiveAnimationController _idleController;
+  RiveAnimationController _curvesController;
+  bool get isIdlePlaying => _idleController?.isActive ?? false;
+  bool get isCurvesPlaying => _curvesController?.isActive ?? false;
 
   @override
   void initState() {
@@ -39,14 +41,21 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     rootBundle.load('assets/animations/loadingstock.riv').then((data) async {
       final file = RiveFile.import(data);
       final artboard = file.mainArtboard;
-      artboard.addController(_controller = SimpleAnimation('idle'));
-        setState(() => _truckArtboard = artboard);
+      artboard.addController(_curvesController = SimpleAnimation('curves'));
+      artboard.addController(_idleController = SimpleAnimation('idle'));
+      setState(() => _truckArtboard = artboard);
     });
   }
   
-  void _togglePlay() {
+  void _toggleIdlePlay() {
     setState(() {
-      _controller.isActive = !_controller.isActive;
+      _idleController.isActive = !_idleController.isActive;
+    });
+  }
+
+  void _toggleCurvePlay() {
+    setState(() {
+      _curvesController.isActive = !_curvesController.isActive;
     });
   }
 
@@ -57,10 +66,28 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
         title: Text(widget.title),
       ),
       body: Center(
-        child: _truckArtboard == null ? CircularProgressIndicator() : Rive(artboard: _truckArtboard)
-      ),floatingActionButton: FloatingActionButton(
-        onPressed: () => _togglePlay(),
-        child: Icon(isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded),
+        child: _truckArtboard == null ? CircularProgressIndicator() :
+        Column(
+          children: [
+            Container(
+              height: MediaQuery.of(context).size.height * 0.4,
+              width: MediaQuery.of(context).size.width,
+              child: Rive(artboard: _truckArtboard)
+            ),
+            Row(
+              children: [
+                IconButton(
+                  onPressed: () => _toggleCurvePlay(),
+                  icon: Icon(isCurvesPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded),
+                ),
+                IconButton(
+                  onPressed: () => _toggleIdlePlay(),
+                  icon: Icon(isIdlePlaying ? Icons.pause_rounded : Icons.play_arrow_rounded),
+                ),
+              ],
+            )
+          ],
+        )
       ),
     );
   }
